@@ -16,6 +16,11 @@ class Reactions
             }else{
                 $array['error'][] = "Invalid email format";
             }
+            if (isset($postArray['date_added']) && filter_var($postArray['date_added'] != '')) {
+                $date_added = stripslashes(trim($postArray['date_added']));
+            }else{
+                $array['error'][] = "Invalid date_added format";
+            }
 
             if (isset($postArray['message']) && $postArray['message'] != '') {
                 $message = stripslashes(trim($postArray['message']));
@@ -25,12 +30,12 @@ class Reactions
 
             if (empty($array['error'])) {
 
-                $srqry = $con->prepare("INSERT INTO reactions (name,email,message) VALUES (?,?,?);");
+                $srqry = $con->prepare("INSERT INTO reactions (name,email,date_added,message) VALUES (?,?,?);");
                 if ($srqry === false) {
                     prettyDump( mysqli_error($con) );
                 }
                 
-                $srqry->bind_param('sss',$name,$email,$message);
+                $srqry->bind_param('sss',$name,$email,$date_added,$message);
                 if ($srqry->execute() === false) {
                     prettyDump( mysqli_error($con) );
                 }else{
@@ -47,18 +52,20 @@ class Reactions
     static function getReactions(){
         global $con;
         $array = [];
-        $grqry = $con->prepare("SELECT id,name,email FROM reactions;");
+        $grqry = $con->prepare("SELECT id,name,email,date_added,message FROM reactions;");
         if($grqry === false) {
             prettyDump( mysqli_error($con) );
         } else{
-            $grqry->bind_result($id,$name,$email);
+            $grqry->bind_result($id,$name,$email,$date_added,$message);
             if($grqry->execute()){
                 $grqry->store_result();
                 while($grqry->fetch()){
                     $array[] = [
                         'id' => $id,
                         'name' => $name,
-                        'email'=> $email
+                        'email'=> $email,
+                        'date_added' => $date_added,
+                        'message' => $message
                     ];
                 }
             }
@@ -66,5 +73,10 @@ class Reactions
         }
         return $array;
     }
+    static function redirect(){
+        header("Location: http://localhost/Weekopdracht%20inlog/web-weekopdracht-2-comment-video-MarcMaassen/");
+        die();
+    }
+
 }
 
